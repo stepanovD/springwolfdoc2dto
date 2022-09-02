@@ -1,0 +1,9 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+rootProject.name = "springwolfdoc2dto"
+include 'springwolfdoc2dto-gradle-plugin'
+include 'springwolfdoc2dto-core'
+
