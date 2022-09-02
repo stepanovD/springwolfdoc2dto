@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springwolf2dto.gradle
+package io.github.springwolf2dto.gradle
 
 import org.gradle.api.provider.Property
 

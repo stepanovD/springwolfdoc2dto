@@ -1,8 +1,7 @@
-package org.springwolf2dto.gradle
+package io.github.springwolf2dto.gradle
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class SpringwolfDTOPluginTest {

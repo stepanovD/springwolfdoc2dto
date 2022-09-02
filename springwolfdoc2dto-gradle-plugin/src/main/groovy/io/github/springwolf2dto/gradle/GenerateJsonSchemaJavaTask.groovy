@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springwolf2dto.gradle;
+package io.github.springwolf2dto.gradle
 
+import io.github.springwolf2dto.HttpConnector
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Input
-import org.gradle.api.model.ReplacedBy
-import org.springwolf2dto.Configuration
-import org.springwolf2dto.Connector
-import org.springwolf2dto.HttpConnector
-import org.springwolf2dto.PojoGenerator
+import io.github.springwolf2dto.Configuration
+import io.github.springwolf2dto.Connector
+import io.github.springwolf2dto.PojoGenerator
 
 import java.nio.file.Files
 import java.nio.file.Path

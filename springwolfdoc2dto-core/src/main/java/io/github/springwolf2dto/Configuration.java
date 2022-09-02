@@ -1,4 +1,4 @@
-package org.springwolf2dto;
+package io.github.springwolf2dto;
 
 import lombok.NonNull;
 

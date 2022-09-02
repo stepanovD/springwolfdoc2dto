@@ -23,15 +23,6 @@ pluginBundle {
     tags = ['springwolf', 'codegenerate']
 }
 
-//gradlePlugin {
-//    plugins {
-//        springwolf2dtoPlugin {
-//            id = 'org.springwolf2dto'
-//            implementationClass = 'org.springwolf2dto.gradle.SpringwolfDTOPlugin'
-//        }
-//    }
-//}
-
 publishing {
     repositories {
         maven {
