@@ -1,6 +1,6 @@
-package io.github.springwolf2dto.gradle
+package io.github.stepanovd.springwolf2dto.gradle
 
-
+import io.github.stepanovd.springwolf2dto.gradle.GenerateJsonSchemaJavaTask
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Assertions

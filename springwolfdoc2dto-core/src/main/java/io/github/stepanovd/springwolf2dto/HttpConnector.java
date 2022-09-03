@@ -1,4 +1,4 @@
-package io.github.springwolf2dto;
+package io.github.stepanovd.springwolf2dto;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

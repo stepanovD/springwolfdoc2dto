@@ -1,4 +1,4 @@
-package io.github.springwolf2dto.gradle
+package io.github.stepanovd.springwolf2dto.gradle
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
