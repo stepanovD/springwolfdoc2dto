@@ -1,9 +1,13 @@
 plugins {
     id 'java'
     id 'java-library'
-//    id 'maven'
     id 'signing'
     id 'maven-publish'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 repositories {
@@ -28,57 +32,28 @@ test {
 
 jar.enabled = true
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
+//task javadocJar(type: Jar) {
+//    classifier = 'javadoc'
+//    from javadoc
+//}
+//
+//task sourcesJar(type: Jar) {
+//    classifier = 'sources'
+//    from sourceSets.main.allSource
+//}
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
+//artifacts {
+//    archives javadocJar, sourcesJar
+//}
 
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-signing {
-    sign configurations.archives
-}
-
-def pomConfig = {
-    licenses {
-        license {
-            name 'The Apache License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-        }
-    }
-
-    developers {
-        developer {
-            id 'distep2'
-            name 'Dmitry Stepanov'
-            email 'distep2@gmail.com'
-        }
-    }
-
-    scm {
-        url 'https://github.com/stepanovD/springwolfdoc2dto'
-    }
-}
+//signing {
+//    sign configurations.archives
+//}
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
-
-            artifact sourcesJar {
-                classifier "sources"
-            }
-
-            artifact javadocJar {
-                classifier "javadoc"
-            }
 
             groupId = projectGroup
             artifactId = 'springwolfdoc2dto-core'
@@ -87,33 +62,24 @@ publishing {
             pom {
                 name = 'springwolfdoc2dto-core'
                 description = 'A library for generate dto classes by SpringWolf documentations'
-            }
 
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('description', 'A library for generate dto classes by SpringWolf documentations')
-                root.appendNode('name', 'springwolfdoc2dto-core')
-                root.appendNode('url', 'https://github.com/stepanovD/springwolfdoc2dto')
-                root.children().last() + pomConfig
-
-                def pomFile = file("${project.buildDir}/generated-pom.xml")
-                writeTo(pomFile)
-                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
-                artifact(pomAscFile) {
-                    classifier = null
-                    extension = 'pom.asc'
-                }
-            }
-
-            project.tasks.signArchives.signatureFiles.each {
-                artifact(it) {
-                    def matcher = it.file =~ /-(sources|javadoc)\.jar\.asc$/
-                    if (matcher.find()) {
-                        classifier = matcher.group(1)
-                    } else {
-                        classifier = null
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
-                    extension = 'jar.asc'
+                }
+
+                developers {
+                    developer {
+                        id = 'distep2'
+                        name = 'Dmitry Stepanov'
+                        email = 'distep2@gmail.com'
+                    }
+                }
+
+                scm {
+                    url = 'https://github.com/stepanovD/springwolfdoc2dto'
                 }
             }
         }
@@ -121,20 +87,24 @@ publishing {
 
     repositories {
         maven {
-            url 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def releasesRepoUrl = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def snapshotsRepoUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
                 username = project.findProperty('ossrhUsername') ?: ''
                 password = project.findProperty('ossrhPassword') ?: ''
             }
         }
     }
+}
 
-    model {
-        tasks.publishMavenJavaPublicationToMavenLocal {
-            dependsOn project.tasks.signArchives
-        }
-        tasks.publishMavenJavaPublicationToMavenRepository {
-            dependsOn project.tasks.signArchives
-        }
+signing {
+    sign publishing.publications.mavenJava
+}
+
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
     }
 }

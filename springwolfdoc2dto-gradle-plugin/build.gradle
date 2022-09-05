@@ -1,13 +1,13 @@
 plugins {
     id 'groovy'
     id 'groovy-gradle-plugin'
-    id 'maven-publish'
+//    id 'maven-publish'
     id 'com.gradle.plugin-publish' version '1.0.0-rc-1'
 }
 
 dependencies {
     implementation project(':springwolfdoc2dto-core')
-    implementation gradleApi() //'org.gradle:api:1.0'
+    implementation gradleApi()
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -18,16 +18,16 @@ test {
 }
 
 pluginBundle {
-//    website = 'https://www.gradle.org/'
-//    vcsUrl = 'https://github.com/gradle/greeting-plugin-example'
+    website = 'https://github.com/stepanovD/springwolfdoc2dto'
+    vcsUrl = 'https://github.com/stepanovD/springwolfdoc2dto'
     tags = ['springwolf', 'codegenerate']
 }
 
-publishing {
-    repositories {
-        maven {
-            name = 'localPluginRepository'
-            url = '../local-plugin-repository'
-        }
-    }
-}
+//publishing {
+//    repositories {
+//        maven {
+//            name = 'localPluginRepository'
+//            url = '../local-plugin-repository'
+//        }
+//    }
+//}
