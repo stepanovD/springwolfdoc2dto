@@ -31,7 +31,7 @@ class SpringwolfDTOPlugin implements Plugin<Project> {
         def extension = project.extensions.create('springWolfDoc2DTO', SpringwolfDTOExtension)
 
         project.getTasks().register(
-                'generateSpringWolfDoc2DTO',
+                'generateDTO',
                 GenerateJsonSchemaJavaTask,
                 { task ->
                     task.getURL().set(extension.url)
@@ -40,30 +40,6 @@ class SpringwolfDTOPlugin implements Plugin<Project> {
                     task.getTargetDirectory().set(extension.targetDirectory)
                 }
         )
-
-//        project.task('generateDtoTest') {
-//            doLast {
-//                println "${extension.url.get()} to ${extension.targetPackage.get()}"
-//            }
-//        }
-//        project.task('generateDto') {
-//            doLast {
-//                Configuration configuration = new Configuration(
-//                        extension.url.get(),
-//                        null,
-//                        extension.targetDirectory.get(),
-//                        extension.targetPackage.get(),
-//                        extension.documentationTitle.get()
-//                )
-//
-//                Connector connector = new HttpConnector()
-//
-//                PojoGenerator.convertJsonToJavaClass(configuration, connector)
-//
-//                println "${extension.url.get()} to ${extension.targetPackage.get()}"
-//            }
-//        }
-
 
     }
 }

@@ -8,7 +8,7 @@ class SpringwolfDTOPluginTest {
     @Test
     void springwolfDTOPluginAddsGenerateJsonSchemaJavaTaskToProject() {
         Project project = ProjectBuilder.builder().build()
-        project.apply plugin: 'org.springwolf2dto'
+        project.apply plugin: 'io.github.stepanovd.springwolf2dto'
         println 'springwolfDTOPluginAddsGenerateJsonSchemaJavaTaskToProject'
     }
 }

@@ -25,7 +25,7 @@ pluginBundle {
 gradlePlugin {
     plugins {
         springwolfdoc2dtoPlugin {
-            id = 'io.github.springwolfdoc2dto'
+            id = 'io.github.stepanovd.springwolfdoc2dto'
             displayName = 'Plugin for generate DTO model by Springwolf docs'
             description = 'A plugin that helps you generate DTO model by Springwolf docs'
             implementationClass = 'io.github.stepanovd.springwolf2dto.gradle.SpringwolfDTOPlugin'
