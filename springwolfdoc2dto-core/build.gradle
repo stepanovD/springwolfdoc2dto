@@ -1,9 +1,4 @@
-plugins {
-    id 'java'
-    id 'java-library'
-    id 'signing'
-    id 'maven-publish'
-}
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 java {
     withJavadocJar()
@@ -32,32 +27,14 @@ test {
 
 jar.enabled = true
 
-//task javadocJar(type: Jar) {
-//    classifier = 'javadoc'
-//    from javadoc
-//}
-//
-//task sourcesJar(type: Jar) {
-//    classifier = 'sources'
-//    from sourceSets.main.allSource
-//}
-
-//artifacts {
-//    archives javadocJar, sourcesJar
-//}
-
-//signing {
-//    sign configurations.archives
-//}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
 
-            groupId = projectGroup
+            groupId = group
             artifactId = 'springwolfdoc2dto-core'
-            version = projectVersion
+            version = version
 
             pom {
                 name = 'springwolfdoc2dto-core'

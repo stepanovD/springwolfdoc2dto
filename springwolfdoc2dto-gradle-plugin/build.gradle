@@ -1,7 +1,6 @@
 plugins {
     id 'groovy'
     id 'groovy-gradle-plugin'
-//    id 'maven-publish'
     id 'com.gradle.plugin-publish' version '1.0.0-rc-1'
 }
 
@@ -20,14 +19,25 @@ test {
 pluginBundle {
     website = 'https://github.com/stepanovD/springwolfdoc2dto'
     vcsUrl = 'https://github.com/stepanovD/springwolfdoc2dto'
-    tags = ['springwolf', 'codegenerate']
+    tags = ['spring', 'springboot','asyncApi', 'springwolf', 'codegenerate']
 }
 
-//publishing {
-//    repositories {
-//        maven {
-//            name = 'localPluginRepository'
-//            url = '../local-plugin-repository'
-//        }
-//    }
-//}
+gradlePlugin {
+    plugins {
+        springwolfdoc2dtoPlugin {
+            id = 'io.github.springwolfdoc2dto'
+            displayName = 'Plugin for generate DTO model by Springwolf docs'
+            description = 'A plugin that helps you generate DTO model by Springwolf docs'
+            implementationClass = 'io.github.stepanovd.springwolf2dto.gradle.SpringwolfDTOPlugin'
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = 'localPluginRepository'
+            url = '../local-plugin-repository'
+        }
+    }
+}
