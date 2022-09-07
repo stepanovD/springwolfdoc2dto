@@ -39,7 +39,7 @@ publishing {
             pom {
                 name = 'springwolfdoc2dto-core'
                 description = 'A library for generate dto classes by SpringWolf documentations'
-
+                url = 'https://github.com/stepanovD/springwolfdoc2dto'
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
