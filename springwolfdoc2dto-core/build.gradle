@@ -18,7 +18,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jsonschema2pojo/jsonschema2pojo-core
     implementation 'org.jsonschema2pojo:jsonschema2pojo-core:1.1.2'
 
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4'
 }
 
 test {
