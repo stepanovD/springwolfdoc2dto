@@ -34,7 +34,7 @@ class SpringwolfDTOPlugin implements Plugin<Project> {
                 'generateDTO',
                 GenerateJsonSchemaJavaTask,
                 { task ->
-                    task.getURL().set(extension.url)
+                    task.getUrl().set(extension.url)
                     task.getDocumentationTitle().set(extension.documentationTitle)
                     task.getTargetPackage().set(extension.targetPackage)
                     task.getTargetDirectory().set(extension.targetDirectory)

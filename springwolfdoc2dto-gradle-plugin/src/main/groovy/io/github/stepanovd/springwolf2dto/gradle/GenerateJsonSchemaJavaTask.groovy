@@ -17,7 +17,10 @@ package io.github.stepanovd.springwolf2dto.gradle
 
 import io.github.stepanovd.springwolf2dto.HttpConnector
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Input
 import io.github.stepanovd.springwolf2dto.Configuration
@@ -34,7 +37,7 @@ import java.nio.file.Path
  */
 abstract class GenerateJsonSchemaJavaTask extends DefaultTask {
     @Input
-    abstract Property<String> getURL()
+    abstract Property<String> getUrl()
 
     @Input
     abstract Property<String> getTargetPackage()
@@ -42,45 +45,28 @@ abstract class GenerateJsonSchemaJavaTask extends DefaultTask {
     @Input
     abstract Property<String> getDocumentationTitle()
 
-    @Input
-    abstract Property<Path> getTargetDirectory()
+    @OutputDirectory
+    abstract DirectoryProperty getTargetDirectory()
 
     GenerateJsonSchemaJavaTask() {
         description = 'Generates Java classes from a json schema.'
         group = 'Build'
-
     }
-
-//  def configureJava() {
-//    project.sourceSets.main.java.srcDirs += [ configuration.targetDirectory ]
-//    dependsOn(project.tasks.processResources)
-//    project.tasks.compileJava.dependsOn(this)
-//  }
 
     @TaskAction
     def generate() {
-        String url = getURL().get() ?: "http://localhost:8080/springwolf/docs"
+        String url = getUrl().get() ?: "http://localhost:8080/springwolf/docs"
         String targetPackage = getTargetPackage().get() ?: ""
         String documentationTitle = getDocumentationTitle().get() ?: "service"
-        Path targetDirectory = getTargetDirectory().get() ?: project.file("${project.buildDir}/generated-sources/generated-dto").toPath()
+        Path targetDirectory = getTargetDirectory().isPresent() ? getTargetDirectory().get().asFile.toPath() : project.file("${project.buildDir}/generated-sources/generated-dto").toPath()
 
         Configuration configuration = new Configuration(url, null, targetDirectory, targetPackage, documentationTitle)
-
-//        if (project.plugins.hasPlugin('java')) {
-//            configureJava()
-//        } else {
-//            throw new GradleException('generateJsonSchema: Java plugin is required')
-//        }
-        outputs.dir configuration.outputJavaClassDirectory()
-
-        inputs.property("configuration", configuration.toString())
 
         logger.info 'Using this configuration:\n{}', configuration
 
         Connector connector = new HttpConnector()
 
         Files.createDirectories(configuration.outputJavaClassDirectory())
-
         PojoGenerator.convertJsonToJavaClass(configuration, connector)
 
         println "${configuration.url()} to ${configuration.packageName()}"

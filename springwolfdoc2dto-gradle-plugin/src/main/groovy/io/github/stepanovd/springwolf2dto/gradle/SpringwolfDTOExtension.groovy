@@ -16,10 +16,8 @@
 
 package io.github.stepanovd.springwolf2dto.gradle
 
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
-
-import java.nio.file.Path
-
 /**
  * The configuration properties.
  *
@@ -30,5 +28,6 @@ interface SpringwolfDTOExtension {
   Property<String> getTargetPackage();
   Property<List<String>> getComponents();
   Property<String> getDocumentationTitle();
-  Property<Path> getTargetDirectory();
+
+  DirectoryProperty getTargetDirectory();
 }
