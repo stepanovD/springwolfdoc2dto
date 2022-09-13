@@ -17,6 +17,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 class PojoGeneratorTest {
@@ -194,6 +195,13 @@ class PojoGeneratorTest {
         Assertions.assertEquals(testEventClass.getMethod("getOccuredOn").invoke(testObject), LocalDateTime.of(2015, 7, 20, 15, 49, 4));
         Assertions.assertEquals(testEventClass.getMethod("getValueType").invoke(testObject).getClass().getName(), "pckg.test.TestEvent$ValueType");
         Assertions.assertEquals(testEventClass.getMethod("getFlags").invoke(testObject).getClass().getName(), "pckg.test.Flags");
+
+        var flags = testEventClass.getMethod("getFlags").invoke(testObject);
+        Map<String, Boolean> additionalProperties = (Map<String, Boolean>) flags.getClass().getMethod("getAdditionalProperties").invoke(flags);
+
+        Assertions.assertFalse(additionalProperties.get("additionalProp1"));
+        Assertions.assertTrue(additionalProperties.get("additionalProp2"));
+        Assertions.assertTrue(additionalProperties.get("additionalProp3"));
 
         System.out.println("deserialized object");
         deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
