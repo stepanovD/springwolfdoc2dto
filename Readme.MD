@@ -72,7 +72,7 @@ public class TestEvent implements Serializable {
 
 SpringWolf generate json documentation:
 
-```json
+```json5
 {
   "service": {
     "serviceVersion": "2.0.0",
@@ -322,7 +322,7 @@ public class DeletedEvent
 
 Springwolf generate json documentation
 
-```json
+```json5
 {
     "service": {
         //common info
