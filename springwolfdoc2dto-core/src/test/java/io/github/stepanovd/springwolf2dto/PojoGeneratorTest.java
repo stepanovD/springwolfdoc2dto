@@ -10,7 +10,6 @@ import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.*;
@@ -140,30 +139,29 @@ class PojoGeneratorTest {
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        try(StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
 
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
-        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
-        JavaCompiler.CompilationTask task = compiler.getTask(
-                null,
-                fileManager,
-                diagnostics,
-                null,
-                null,
-                compilationUnits
-        );
+            JavaCompiler.CompilationTask task = compiler.getTask(
+                    null,
+                    fileManager,
+                    diagnostics,
+                    null,
+                    null,
+                    compilationUnits
+            );
 
-        task.call();
+            task.call();
 
-        for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-            System.out.format("Error on line %d in %s%n",
-                    diagnostic.getLineNumber(),
-                    diagnostic.getSource());
+            for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+                System.out.format("Error on line %d in %s%n",
+                        diagnostic.getLineNumber(),
+                        diagnostic.getSource());
+            }
         }
-
-        fileManager.close();
 
         ClassLoader classLoader = PojoGeneratorTest.class.getClassLoader();
         URLClassLoader urlClassLoader = new URLClassLoader(
@@ -396,30 +394,29 @@ class PojoGeneratorTest {
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        try(StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
 
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
-        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
-        JavaCompiler.CompilationTask task = compiler.getTask(
-                null,
-                fileManager,
-                diagnostics,
-                null,
-                null,
-                compilationUnits
-        );
+            JavaCompiler.CompilationTask task = compiler.getTask(
+                    null,
+                    fileManager,
+                    diagnostics,
+                    null,
+                    null,
+                    compilationUnits
+            );
 
-        task.call();
+            task.call();
 
-        for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-            System.out.format("Error on line %d in %s%n",
-                    diagnostic.getLineNumber(),
-                    diagnostic.getSource());
+            for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+                System.out.format("Error on line %d in %s%n",
+                        diagnostic.getLineNumber(),
+                        diagnostic.getSource());
+            }
         }
-
-        fileManager.close();
 
         ClassLoader classLoader = PojoGeneratorTest.class.getClassLoader();
         URLClassLoader urlClassLoader = new URLClassLoader(
