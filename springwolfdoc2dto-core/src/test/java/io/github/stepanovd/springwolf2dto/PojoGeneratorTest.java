@@ -457,6 +457,256 @@ class PojoGeneratorTest {
         deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
     }
 
+    @Test
+    void convertJsonToJavaClassWithPolymorphismWithoutTitle() throws IOException, ClassNotFoundException {
+        Path path = Paths.get("src/test/java");
+        String packageName = "pckg.test";
+        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
+
+        Files.createDirectories(path);
+        Configuration config = new Configuration("url", null, path, packageName, null);
+
+        Connector connector = new StringConnector(
+                """                   
+                        {
+                            "asyncapi": "2.0.0",
+                            "info": {
+                                "title": "service",
+                                "version": "2.0.1-SNAPSHOT"
+                            },
+                            "servers": {
+                                "kafka": {
+                                    "url": "localhost:9092",
+                                    "protocol": "kafka"
+                                }
+                            },
+                            "channels": {
+                                "kafka-channel": {
+                                    "subscribe": {
+                                        "bindings": {
+                                            "kafka": {}
+                                        },
+                                        "message": {
+                                            "oneOf": [
+                                                {
+                                                    "name": "pckg.test.DomainEvent",
+                                                    "title": "DomainEvent",
+                                                    "payload": {
+                                                        "$ref": "#/components/schemas/DomainEvent"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "pckg.test.ChangedEvent",
+                                                    "title": "ChangedEvent",
+                                                    "payload": {
+                                                        "$ref": "#/components/schemas/ChangedEvent"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "pckg.test.DeletedEvent",
+                                                    "title": "DeletedEvent",
+                                                    "payload": {
+                                                        "$ref": "#/components/schemas/DeletedEvent"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "bindings": {
+                                        "kafka": {}
+                                    }
+                                }
+                            },
+                            "components": {
+                                "schemas": {
+                                    "ChangedEvent": {
+                                        "required": [
+                                            "id",
+                                            "occuredOn",
+                                            "value",
+                                            "type"
+                                        ],
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            },
+                                            "occuredOn": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "exampleSetFlag": false
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            }
+                                        },
+                                        "example": {
+                                            "id": "string",
+                                            "occuredOn": "2015-07-20T15:49:04",
+                                            "value": "string",
+                                            "type": "CHANGED_EVENT"
+                                        },
+                                        "exampleSetFlag": true
+                                    },
+                                    "DeletedEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            },
+                                            "occuredOn": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "exampleSetFlag": false
+                                            },
+                                            "valueId": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            }
+                                        },
+                                        "example": {
+                                            "id": "string",
+                                            "occuredOn": "2015-07-20T15:49:04",
+                                            "valueId": "string",
+                                            "type": "DELETED_EVENT"
+                                        },
+                                        "exampleSetFlag": true
+                                    },
+                                    "DomainEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            },
+                                            "occuredOn": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "exampleSetFlag": false
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "exampleSetFlag": false
+                                            }
+                                        },
+                                        "example": {
+                                            "id": "string",
+                                            "occuredOn": "2015-07-20T15:49:04",
+                                            "type": "string"
+                                        },
+                                        "discriminator": {
+                                            "propertyName": "type",
+                                            "mapping": {
+                                                "CHANGED_EVENT": "#/components/schemas/ChangedEvent",
+                                                "DELETED_EVENT": "#/components/schemas/DeletedEvent"
+                                            }
+                                        },
+                                        "exampleSetFlag": true,
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/components/schemas/ChangedEvent",
+                                                "exampleSetFlag": false
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/DeletedEvent",
+                                                "exampleSetFlag": false
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                                   
+                        """
+        );
+
+        PojoGenerator.convertJsonToJavaClass(config, connector);
+
+        Path srcPath = path;
+        for (String subfolder : packageName.split("\\.")) {
+            srcPath = srcPath.resolve(subfolder);
+        }
+
+        List<File> files = Files.list(srcPath)
+                .map(Path::toFile)
+                .collect(Collectors.toList());
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+        try(StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
+
+            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+
+            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+
+            JavaCompiler.CompilationTask task = compiler.getTask(
+                    null,
+                    fileManager,
+                    diagnostics,
+                    null,
+                    null,
+                    compilationUnits
+            );
+
+            task.call();
+
+            for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+                System.out.format("Error on line %d in %s%n",
+                        diagnostic.getLineNumber(),
+                        diagnostic.getSource());
+            }
+        }
+
+        ClassLoader classLoader = PojoGeneratorTest.class.getClassLoader();
+        URLClassLoader urlClassLoader = new URLClassLoader(
+                new URL[]{path.toUri().toURL()},
+                classLoader);
+        Class<?> domainEventClass = urlClassLoader.loadClass("pckg.test.DomainEvent");
+
+        System.out.println("loaded class");
+
+        String exampleChangedEvent = """
+                     {
+                        "id": "string",
+                        "occuredOn": "2015-07-20T15:49:04",
+                        "value": "string",
+                        "type": "CHANGED_EVENT"
+                    }
+                """;
+        String exampleDeletedEvent = """
+                     {
+                        "id": "string",
+                        "occuredOn": "2015-07-20T15:49:04",
+                        "valueId": "string",
+                        "type": "DELETED_EVENT"
+                    }
+                """;
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
+        var testChangedObject = objectMapper.readValue(exampleChangedEvent, domainEventClass);
+        var testDeletedObject = objectMapper.readValue(exampleDeletedEvent, domainEventClass);
+
+        Assertions.assertEquals(testChangedObject.getClass().getName(), "pckg.test.ChangedEvent");
+        Assertions.assertEquals(testDeletedObject.getClass().getName(), "pckg.test.DeletedEvent");
+
+        System.out.println("deserialized object");
+
+        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
+    }
+
     private void deleteDirectoryRecursive(Path path) throws IOException {
         Files.walkFileTree(path, new FileVisitor<>() {
             @Override

@@ -57,7 +57,7 @@ abstract class GenerateJsonSchemaJavaTask extends DefaultTask {
     def generate() {
         String url = getUrl().get() ?: "http://localhost:8080/springwolf/docs"
         String targetPackage = getTargetPackage().get() ?: ""
-        String documentationTitle = getDocumentationTitle().get() ?: "service"
+        String documentationTitle = getDocumentationTitle().get() ?: null
         Path targetDirectory = getTargetDirectory().isPresent() ? getTargetDirectory().get().asFile.toPath() : project.file("${project.buildDir}/generated-sources/generated-dto").toPath()
 
         Configuration configuration = new Configuration(url, null, targetDirectory, targetPackage, documentationTitle)

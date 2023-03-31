@@ -29,7 +29,7 @@ public record Configuration(
         Set<String> resources,
         @NonNull Path outputJavaClassDirectory,
         @NonNull String packageName,
-        @NonNull String documentationTitle
+        String documentationTitle
 ) {
 
 }
