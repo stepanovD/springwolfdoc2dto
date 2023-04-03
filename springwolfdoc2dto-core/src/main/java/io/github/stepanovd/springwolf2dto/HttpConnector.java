@@ -51,7 +51,7 @@ public class HttpConnector implements Connector {
                 .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
 
         JsonNode jsonNode = objectMapper.readTree(body);
-        JsonNode baseNode = config.documentationTitle() == null ? jsonNode : jsonNode.get(config.documentationTitle());
+        JsonNode baseNode = config.documentationTitle() == null || config.documentationTitle().isEmpty() ? jsonNode : jsonNode.get(config.documentationTitle());
         JsonNode schemas = baseNode.get("components").get("schemas");
         return schemas;
     }

@@ -704,7 +704,7 @@ class PojoGeneratorTest {
 
         System.out.println("deserialized object");
 
-        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
+//        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
     }
 
     private void deleteDirectoryRecursive(Path path) throws IOException {

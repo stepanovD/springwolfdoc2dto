@@ -18,6 +18,7 @@ package io.github.stepanovd.springwolf2dto.gradle
 
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
+
 /**
  * The configuration properties.
  *

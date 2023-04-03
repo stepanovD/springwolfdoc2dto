@@ -20,6 +20,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Input
@@ -43,6 +44,7 @@ abstract class GenerateJsonSchemaJavaTask extends DefaultTask {
     abstract Property<String> getTargetPackage()
 
     @Input
+    @Optional
     abstract Property<String> getDocumentationTitle()
 
     @OutputDirectory

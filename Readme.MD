@@ -17,7 +17,8 @@ plugins {
 
 * __String url__ - URL to springwolf docs (default is *http://{domain}/springwolf/docs*)
 * __String targetPackage__ - class package for generated classes
-* __String documentationTitle__ - title of service used in springwolf documentation. This title define key of documentation in json object.
+* __String documentationTitle__ - title of service used in springwolf documentation. This title define key of documentation in json object. 
+You can set this to empty string if you use springwolf version 0.10+
 * __Path targetDirectory__ - directory for save generated classes
 
 ### Set parameters:
