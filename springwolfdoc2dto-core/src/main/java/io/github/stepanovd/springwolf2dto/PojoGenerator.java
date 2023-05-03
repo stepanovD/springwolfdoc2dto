@@ -47,8 +47,8 @@ public class PojoGenerator {
      */
     public static void convertJsonToJavaClass(Configuration configuration, Connector connector)
             throws IOException {
-        JsonNode schemas = connector.load(configuration);
-
+        JsonNode baseNode = connector.load(configuration);
+        JsonNode schemas = baseNode.get("components").get("schemas");
         JCodeModel jcodeModel = new JCodeModel();
 
         GenerationConfig config = new DefaultGenerationConfig() {
@@ -97,8 +97,6 @@ public class PojoGenerator {
             public boolean isSerializable() {
                 return true;
             }
-
-
         };
 
         Iterator<String> fieldNames = schemas.fieldNames();
@@ -106,14 +104,19 @@ public class PojoGenerator {
         Map<String, String> parentRefs = new HashMap<>();
         Map<String, Map<String, String>> discriminatorsMapping = new HashMap<>();
 
+        CustomSchemaStore schemaStore = new CustomSchemaStore();
+
         while (fieldNames.hasNext()) {
             String componentName = fieldNames.next();
+
+            if(skip(componentName)) {
+                continue;
+            }
 
             JsonNode schemaNode = schemas.get(componentName);
             String schema = schemaNode.toPrettyString();
 
-
-            RuleFactory ruleFactory = new RuleFactory(config, new Jackson2Annotator(config), new SchemaStore());
+            RuleFactory ruleFactory = new RuleFactory(config, new Jackson2Annotator(config), schemaStore);
             SchemaMapper mapper = new SchemaMapper(ruleFactory, new SchemaGenerator());
             JType jType = mapper.generate(jcodeModel, componentName, configuration.packageName(), schema);
 
@@ -158,11 +161,20 @@ public class PojoGenerator {
                     discriminatorsMapping.put(componentName, mapping);
                 }
             }
+
+            String fragmentPath = "#/components/schemas/%s".formatted(componentName);
+            schemaStore.create(fragmentPath, schemaNode, jType);
+
+            schemaStore.invalidateOnPrefix("#/properties", fragmentPath);
         }
 
         tryToExtendsClasses(parentRefs, jcodeModel, configuration.packageName());
         discriminatorsMapping.forEach((cls, mapping) -> tryToAnnotateJsonSubTypes(cls, mapping, configuration.packageName(), jcodeModel));
         jcodeModel.build(configuration.outputJavaClassDirectory().toFile());
+    }
+
+    private static boolean skip(String componentName){
+        return componentName.startsWith("SpringKafkaDefaultHeaders") || "HeadersNotDocumented".equals(componentName);
     }
 
     private static void tryToExtendsClasses(Map<String, String> parentRefs, JCodeModel jcodeModel, String packageName){

@@ -8,7 +8,7 @@ Support of polymorphism according to AsyncApi standard is added.
 
 ```groovy
 plugins {
-    id 'io.github.stepanovd.springwolf2dto' version '1.0.1-alpha'
+    id 'io.github.stepanovd.springwolf2dto' version '1.0.4-alpha'
 }
 ```
 ## Configuration

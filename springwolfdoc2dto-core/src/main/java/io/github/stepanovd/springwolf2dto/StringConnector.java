@@ -37,7 +37,6 @@ public class StringConnector implements Connector {
 
         JsonNode jsonNode = objectMapper.readTree(body);
         JsonNode baseNode = config.documentationTitle() == null || config.documentationTitle().isEmpty()? jsonNode : jsonNode.get(config.documentationTitle());
-        JsonNode schemas = baseNode.get("components").get("schemas");
-        return schemas;
+        return baseNode;
     }
 }

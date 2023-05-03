@@ -737,15 +737,50 @@ class PojoGeneratorTest {
     @Disabled
     void convertJsonFromHttpToJavaClass() throws IOException {
         Path path = Paths.get("src/test/java");
-        Files.createDirectories(path);
         String packageName = "pckg.test";
-        String url = "url";
-        Configuration config = new Configuration(url, null, path, packageName, "attributes");
+        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
+
+        Files.createDirectories(path);
+
+        String url = "http://localhost:8080/springwolf/docs";
+        Configuration config = new Configuration(url, null, path, packageName, "");
 
         Connector connector = new HttpConnector();
         PojoGenerator.convertJsonToJavaClass(config, connector);
 
-        ClassLoader classLoader = PojoGeneratorTest.class.getClassLoader();
-        //classLoader.loadClass(packageName + ".")
+        Path srcPath = path;
+        for (String subfolder : packageName.split("\\.")) {
+            srcPath = srcPath.resolve(subfolder);
+        }
+
+        List<File> files = Files.list(srcPath)
+                .map(Path::toFile)
+                .collect(Collectors.toList());
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+        try(StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
+
+            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+
+            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+
+            JavaCompiler.CompilationTask task = compiler.getTask(
+                    null,
+                    fileManager,
+                    diagnostics,
+                    null,
+                    null,
+                    compilationUnits
+            );
+
+            task.call();
+
+            for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+                System.out.format("Error on line %d in %s%n",
+                        diagnostic.getLineNumber(),
+                        diagnostic.getSource());
+            }
+        }
     }
 }
