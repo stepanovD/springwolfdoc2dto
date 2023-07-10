@@ -23,10 +23,7 @@ import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -99,7 +96,9 @@ public class PojoGenerator {
             }
         };
 
-        Iterator<String> fieldNames = schemas.fieldNames();
+        List<String> componentList = sortComponents(schemas);
+
+        Iterator<String> fieldNames = componentList.iterator();//schemas.fieldNames();
 
         Map<String, String> parentRefs = new HashMap<>();
         Map<String, Map<String, String>> discriminatorsMapping = new HashMap<>();
@@ -171,6 +170,63 @@ public class PojoGenerator {
         tryToExtendsClasses(parentRefs, jcodeModel, configuration.packageName());
         discriminatorsMapping.forEach((cls, mapping) -> tryToAnnotateJsonSubTypes(cls, mapping, configuration.packageName(), jcodeModel));
         jcodeModel.build(configuration.outputJavaClassDirectory().toFile());
+    }
+
+    private static List<String> sortComponents(JsonNode schemas){
+        Iterator<String> fieldNames = schemas.fieldNames();
+        LinkedList<String> orderedList = new LinkedList<>();
+
+        Map<String, Set<String>> refs = new HashMap<>();
+
+        while (fieldNames.hasNext()) {
+            String componentName = fieldNames.next();
+
+            if (skip(componentName)) {
+                continue;
+            }
+
+            JsonNode schemaNode = schemas.get(componentName);
+            if(schemaNode.has("properties")) {
+                Iterator<Map.Entry<String, JsonNode>> properties = schemaNode.get("properties").fields();
+                while(properties.hasNext()) {
+                    Map.Entry<String, JsonNode> prop = properties.next();
+
+                    if(prop.getValue().has("$ref")) {
+                        String mappingRef = prop.getValue().get("$ref").asText();
+                        String ref = mappingRef.substring(mappingRef.lastIndexOf("/") + 1);
+
+                        Set<String> set = refs.getOrDefault(ref, new HashSet<>());
+                        set.add(componentName);
+                        refs.put(ref, set);
+                    }
+                }
+
+                if(refs.containsKey(componentName)) {
+                    Set<String> referals = refs.get(componentName);
+
+                    int it = orderedList.size();
+                    int pos = orderedList.size();
+
+                    Iterator<String> descendingIterator = orderedList.descendingIterator();
+
+                    while (descendingIterator.hasNext()) {
+                        it--;
+                        String component = descendingIterator.next();
+                        if(referals.contains(component)) {
+                            pos = it;
+                        }
+                    }
+
+                    orderedList.add(pos, componentName);
+                } else {
+                    orderedList.addLast(componentName);
+                }
+            } else {
+                orderedList.addFirst(componentName);
+            }
+        }
+
+        return orderedList;
     }
 
     private static boolean skip(String componentName){
