@@ -15,10 +15,12 @@
  */
 package io.github.stepanovd.springwolf2dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.codemodel.*;
+import org.apache.commons.lang3.StringUtils;
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
 
@@ -44,59 +46,17 @@ public class PojoGenerator {
      */
     public static void convertJsonToJavaClass(Configuration configuration, Connector connector)
             throws IOException {
-        JsonNode baseNode = connector.load(configuration);
+        final JsonNode baseNode = connector.load(configuration);
+
+        final Set<String> channelComponents = extractMessageTypesFromChannel(configuration, baseNode);
+
         JsonNode schemas = baseNode.get("components").get("schemas");
         JCodeModel jcodeModel = new JCodeModel();
 
-        GenerationConfig config = new DefaultGenerationConfig() {
-            @Override
-            public boolean isGenerateBuilders() {
-                return true;
-            }
+        GenerationConfig config = new CustomGenerationConfig();
 
-            @Override
-            public SourceType getSourceType() {
-                return SourceType.JSONSCHEMA;
-            }
-
-            @Override
-            public AnnotationStyle getAnnotationStyle() {
-                return AnnotationStyle.JACKSON;
-            }
-
-            @Override
-            public String getDateTimeType() {
-                return "java.time.LocalDateTime";
-            }
-
-            @Override
-            public String getDateType() {
-                return "java.time.LocalDate";
-            }
-
-
-            @Override
-            public boolean isIncludeHashcodeAndEquals() {
-                return false;
-            }
-
-            @Override
-            public boolean isIncludeToString() {
-                return false;
-            }
-
-            @Override
-            public boolean isIncludeGeneratedAnnotation() {
-                return true;
-            }
-
-            @Override
-            public boolean isSerializable() {
-                return true;
-            }
-        };
-
-        List<String> componentList = sortComponents(schemas);
+        //get ordered list of components and add referals to channelComponents
+        List<String> componentList = sortComponents(schemas, channelComponents);
 
         Iterator<String> fieldNames = componentList.iterator();//schemas.fieldNames();
 
@@ -108,7 +68,7 @@ public class PojoGenerator {
         while (fieldNames.hasNext()) {
             String componentName = fieldNames.next();
 
-            if(skip(componentName)) {
+            if (skip(componentName, channelComponents)) {
                 continue;
             }
 
@@ -143,6 +103,7 @@ public class PojoGenerator {
 
 
                 tryToAnnotateJsonTypeInfo((JDefinedClass) jType, propertyName.asText());
+                tryToAnnotateJsonIgnoreProperties((JDefinedClass) jType);
                 if (discriminator.has("mapping")) {
                     JsonNode mappingNode = discriminator.get("mapping");
                     Iterator<String> discriminatorValues = mappingNode.fieldNames();
@@ -172,37 +133,38 @@ public class PojoGenerator {
         jcodeModel.build(configuration.outputJavaClassDirectory().toFile());
     }
 
-    private static List<String> sortComponents(JsonNode schemas){
+    private static List<String> sortComponents(JsonNode schemas, Set<String> channelComponents) {
         Iterator<String> fieldNames = schemas.fieldNames();
         LinkedList<String> orderedList = new LinkedList<>();
 
-        Map<String, Set<String>> refs = new HashMap<>();
+        Map<String, Set<String>> refsChildToParents = new HashMap<>();
+        Map<String, Set<String>> refsParentToChild = new HashMap<>();
 
         while (fieldNames.hasNext()) {
             String componentName = fieldNames.next();
 
-            if (skip(componentName)) {
-                continue;
-            }
-
             JsonNode schemaNode = schemas.get(componentName);
-            if(schemaNode.has("properties")) {
+            if (schemaNode.has("properties")) {
                 Iterator<Map.Entry<String, JsonNode>> properties = schemaNode.get("properties").fields();
-                while(properties.hasNext()) {
+                while (properties.hasNext()) {
                     Map.Entry<String, JsonNode> prop = properties.next();
 
-                    if(prop.getValue().has("$ref")) {
+                    if (prop.getValue().has("$ref")) {
                         String mappingRef = prop.getValue().get("$ref").asText();
                         String ref = mappingRef.substring(mappingRef.lastIndexOf("/") + 1);
 
-                        Set<String> set = refs.getOrDefault(ref, new HashSet<>());
+                        Set<String> set = refsChildToParents.getOrDefault(ref, new HashSet<>());
                         set.add(componentName);
-                        refs.put(ref, set);
+                        refsChildToParents.put(ref, set);
+
+                        Set<String> setChilds = refsParentToChild.getOrDefault(componentName, new HashSet<>());
+                        setChilds.add(ref);
+                        refsParentToChild.put(componentName, setChilds);
                     }
                 }
 
-                if(refs.containsKey(componentName)) {
-                    Set<String> referals = refs.get(componentName);
+                if (refsChildToParents.containsKey(componentName)) {
+                    Set<String> referals = refsChildToParents.get(componentName);
 
                     int it = orderedList.size();
                     int pos = orderedList.size();
@@ -212,7 +174,7 @@ public class PojoGenerator {
                     while (descendingIterator.hasNext()) {
                         it--;
                         String component = descendingIterator.next();
-                        if(referals.contains(component)) {
+                        if (referals.contains(component)) {
                             pos = it;
                         }
                     }
@@ -226,14 +188,25 @@ public class PojoGenerator {
             }
         }
 
+        Iterator<String> descendingIterator = orderedList.descendingIterator();
+        if(channelComponents != null && !channelComponents.isEmpty()) {
+            while (descendingIterator.hasNext()) {
+                String component = descendingIterator.next();
+                if (channelComponents.contains(component) && refsParentToChild.containsKey(component)) {
+                    channelComponents.addAll(refsParentToChild.get(component));
+                }
+            }
+        }
+
         return orderedList;
     }
 
-    private static boolean skip(String componentName){
-        return componentName.startsWith("SpringKafkaDefaultHeaders") || "HeadersNotDocumented".equals(componentName);
+    private static boolean skip(String componentName, Set<String> channelComponents) {
+        boolean excludeByChannel = (channelComponents != null && !channelComponents.isEmpty() && !channelComponents.contains(componentName));
+        return excludeByChannel || componentName.startsWith("SpringKafkaDefaultHeaders") || "HeadersNotDocumented".equals(componentName);
     }
 
-    private static void tryToExtendsClasses(Map<String, String> parentRefs, JCodeModel jcodeModel, String packageName){
+    private static void tryToExtendsClasses(Map<String, String> parentRefs, JCodeModel jcodeModel, String packageName) {
         parentRefs.forEach((cls, ref) -> jcodeModel.packages().forEachRemaining(p -> {
             if (p.name().equals(packageName)) {
                 AtomicReference<JDefinedClass> clsClass = new AtomicReference<>();
@@ -249,7 +222,6 @@ public class PojoGenerator {
 
                 if (clsClass.get() != null && refClass.get() != null) {
                     clsClass.get()._extends(refClass.get());
-
                 }
             }
         }));
@@ -273,6 +245,18 @@ public class PojoGenerator {
         generated.param("use", JsonTypeInfo.Id.NAME);
         generated.param("include", JsonTypeInfo.As.EXISTING_PROPERTY);
         generated.param("visible", true);
+    }
+
+    /**
+     * Add JsonIgnoreProperties(ignoreUnknown = true) annotation for backward
+     *
+     * @JsonIgnoreProperties(ignoreUnknown = true)
+     */
+    private static void tryToAnnotateJsonIgnoreProperties(JDefinedClass jclass) {
+        Class<JsonIgnoreProperties> jti = JsonIgnoreProperties.class;
+        JClass annotationClass = jclass.owner().ref(jti.getName());
+        JAnnotationUse generated = jclass.annotate(annotationClass);
+        generated.param("ignoreUnknown", true);
     }
 
     /**
@@ -316,5 +300,50 @@ public class PojoGenerator {
             annotate.param("value", classes.get(classRef));
         });
 
+    }
+
+    private static Set<String> extractMessageTypesFromChannel(Configuration configuration, JsonNode baseNode) {
+
+        final Set<String> channelComponents = new HashSet<>();
+
+        if (StringUtils.isNoneBlank(configuration.channel())) {
+            JsonNode channel = baseNode.get("channels").get(configuration.channel());
+
+            if (channel.has("subscribe")) {
+                Set<String> types = extractMessageTypesFromChannelStream(channel.get("subscribe"));
+                channelComponents.addAll(types);
+            }
+
+            if (channel.has("publish")) {
+                Set<String> types = extractMessageTypesFromChannelStream(channel.get("publish"));
+                channelComponents.addAll(types);
+            }
+        }
+
+        return channelComponents;
+    }
+
+    private static Set<String> extractMessageTypesFromChannelStream(JsonNode channelStream) {
+        Set<String> messageTypes = new HashSet<>();
+        if (channelStream == null) {
+            return messageTypes;
+        }
+
+        JsonNode messages = channelStream.get("message");
+
+        if (messages.has("oneOf")) {
+            JsonNode oneOf = messages.get("oneOf");
+
+            Iterator<JsonNode> elements = oneOf.elements();
+            while (elements.hasNext()) {
+                JsonNode messageType = elements.next();
+                String typeOfMessage = messageType.get("title").asText("");
+                if (!typeOfMessage.isEmpty()) {
+                    messageTypes.add(typeOfMessage);
+                }
+            }
+        }
+
+        return messageTypes;
     }
 }

@@ -19,6 +19,8 @@ package io.github.stepanovd.springwolf2dto.gradle
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 
+import javax.annotation.Nullable
+
 /**
  * The configuration properties.
  *
@@ -28,7 +30,10 @@ interface SpringwolfDTOExtension {
   Property<String> getUrl();
   Property<String> getTargetPackage();
   Property<List<String>> getComponents();
+  @Nullable
   Property<String> getDocumentationTitle();
+  @Nullable
+  Property<String> getChannel();
 
   DirectoryProperty getTargetDirectory();
 }

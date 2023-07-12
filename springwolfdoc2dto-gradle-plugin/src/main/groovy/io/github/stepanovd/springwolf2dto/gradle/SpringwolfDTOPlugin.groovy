@@ -36,6 +36,7 @@ class SpringwolfDTOPlugin implements Plugin<Project> {
                 { task ->
                     task.getUrl().set(extension.url)
                     task.getDocumentationTitle().set(extension.documentationTitle)
+                    task.getChannel().set(extension.channel)
                     task.getTargetPackage().set(extension.targetPackage)
                     task.getTargetDirectory().set(extension.targetDirectory)
                 }

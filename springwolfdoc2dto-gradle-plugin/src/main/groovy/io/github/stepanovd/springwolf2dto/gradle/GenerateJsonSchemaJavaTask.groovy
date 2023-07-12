@@ -15,22 +15,21 @@
  */
 package io.github.stepanovd.springwolf2dto.gradle
 
+import io.github.stepanovd.springwolf2dto.Configuration
+import io.github.stepanovd.springwolf2dto.Connector
 import io.github.stepanovd.springwolf2dto.HttpConnector
+import io.github.stepanovd.springwolf2dto.PojoGenerator
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.Input
-import io.github.stepanovd.springwolf2dto.Configuration
-import io.github.stepanovd.springwolf2dto.Connector
-import io.github.stepanovd.springwolf2dto.PojoGenerator
 
+import javax.annotation.Nullable
 import java.nio.file.Files
 import java.nio.file.Path
-
 /**
  * A task that performs code generation.
  *
@@ -47,6 +46,11 @@ abstract class GenerateJsonSchemaJavaTask extends DefaultTask {
     @Optional
     abstract Property<String> getDocumentationTitle()
 
+    @Input
+    @Optional
+    @Nullable
+    abstract Property<String> getChannel()
+
     @OutputDirectory
     abstract DirectoryProperty getTargetDirectory()
 
@@ -59,10 +63,11 @@ abstract class GenerateJsonSchemaJavaTask extends DefaultTask {
     def generate() {
         String url = getUrl().get() ?: "http://localhost:8080/springwolf/docs"
         String targetPackage = getTargetPackage().get() ?: ""
-        String documentationTitle = getDocumentationTitle().get() ?: null
+        String documentationTitle = getDocumentationTitle().getOrElse("") ?: null
+        String channel = getChannel().getOrElse("") ?: null
         Path targetDirectory = getTargetDirectory().isPresent() ? getTargetDirectory().get().asFile.toPath() : project.file("${project.buildDir}/generated-sources/generated-dto").toPath()
 
-        Configuration configuration = new Configuration(url, null, targetDirectory, targetPackage, documentationTitle)
+        Configuration configuration = new Configuration(url, null, targetDirectory, targetPackage, documentationTitle, channel)
 
         logger.info 'Using this configuration:\n{}', configuration
 

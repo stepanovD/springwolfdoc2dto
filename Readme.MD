@@ -8,7 +8,7 @@ Support of polymorphism according to AsyncApi standard is added.
 
 ```groovy
 plugins {
-    id 'io.github.stepanovd.springwolf2dto' version '1.0.4-alpha'
+    id 'io.github.stepanovd.springwolf2dto' version '1.0.6-alpha'
 }
 ```
 ## Configuration
@@ -19,6 +19,9 @@ plugins {
 * __String targetPackage__ - class package for generated classes
 * __String documentationTitle__ - title of service used in springwolf documentation. This title define key of documentation in json object. 
 You can set this to empty string if you use springwolf version 0.10+
+* __String channel__ - title of channel used in springwolf documentation. This title define title of channel from documentation. 
+Plugin will generate DTO classes only from this channel if you fill this property.
+You can set this to empty string if you want generate DTO classes by all channels.
 * __Path targetDirectory__ - directory for save generated classes
 
 ### Set parameters:
@@ -28,6 +31,7 @@ springWolfDoc2DTO{
     url = 'http://localhost:8080/springwolf/docs'
     targetPackage = 'example.package'
     documentationTitle = 'my-service'
+    channel = 'kafka-channel'
     targetDirectory = project.layout.getBuildDirectory().dir("generated-sources")
 }
 ```

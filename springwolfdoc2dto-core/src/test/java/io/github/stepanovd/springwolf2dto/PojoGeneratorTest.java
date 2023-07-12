@@ -27,7 +27,7 @@ class PojoGeneratorTest {
         String packageName = "pckg.test";
         deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
         Files.createDirectories(path);
-        Configuration config = new Configuration("url", null, path, packageName, "service");
+        Configuration config = new Configuration("url", null, path, packageName, "service", null);
 
         Connector connector = new StringConnector(
                 """
@@ -212,7 +212,7 @@ class PojoGeneratorTest {
         deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
 
         Files.createDirectories(path);
-        Configuration config = new Configuration("url", null, path, packageName, "service");
+        Configuration config = new Configuration("url", null, path, packageName, "service", null);
 
         Connector connector = new StringConnector(
                 """                   
@@ -464,7 +464,7 @@ class PojoGeneratorTest {
         deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
 
         Files.createDirectories(path);
-        Configuration config = new Configuration("url", null, path, packageName, null);
+        Configuration config = new Configuration("url", null, path, packageName, null, "kafka-channel");
 
         Connector connector = new StringConnector(
                 """                   
@@ -734,7 +734,7 @@ class PojoGeneratorTest {
     }
 
     @Test
-    @Disabled
+//    @Disabled
     void convertJsonFromHttpToJavaClass() throws IOException {
         Path path = Paths.get("src/test/java");
         String packageName = "pckg.test";
@@ -743,7 +743,7 @@ class PojoGeneratorTest {
         Files.createDirectories(path);
 
         String url = "http://localhost:8080/springwolf/docs";
-        Configuration config = new Configuration(url, null, path, packageName, "");
+        Configuration config = new Configuration(url, null, path, packageName, "", "goodt-core-orgstructure");
 
         Connector connector = new HttpConnector();
         PojoGenerator.convertJsonToJavaClass(config, connector);

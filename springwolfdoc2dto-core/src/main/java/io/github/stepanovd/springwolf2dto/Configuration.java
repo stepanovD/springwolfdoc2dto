@@ -29,7 +29,8 @@ public record Configuration(
         Set<String> resources,
         @NonNull Path outputJavaClassDirectory,
         @NonNull String packageName,
-        String documentationTitle
+        String documentationTitle,
+        String channel
 ) {
 
 }
