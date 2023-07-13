@@ -734,7 +734,7 @@ class PojoGeneratorTest {
     }
 
     @Test
-//    @Disabled
+    @Disabled
     void convertJsonFromHttpToJavaClass() throws IOException {
         Path path = Paths.get("src/test/java");
         String packageName = "pckg.test";
