@@ -443,14 +443,25 @@ class PojoGeneratorTest {
                     }
                 """;
 
+        String exampleUnknownEvent = """
+                     {
+                        "id": "string",
+                        "occuredOn": "2015-07-20T15:49:04",
+                        "valueId": "string",
+                        "type": "UNKNOWN_EVENT"
+                    }
+                """;
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
         var testChangedObject = objectMapper.readValue(exampleChangedEvent, domainEventClass);
         var testDeletedObject = objectMapper.readValue(exampleDeletedEvent, domainEventClass);
+        var testUnknownObject = objectMapper.readValue(exampleUnknownEvent, domainEventClass);
 
         Assertions.assertEquals(testChangedObject.getClass().getName(), "pckg.test.ChangedEvent");
         Assertions.assertEquals(testDeletedObject.getClass().getName(), "pckg.test.DeletedEvent");
+        Assertions.assertEquals(testUnknownObject.getClass().getName(), "pckg.test.DomainEvent");
 
         System.out.println("deserialized object");
 
@@ -704,7 +715,7 @@ class PojoGeneratorTest {
 
         System.out.println("deserialized object");
 
-//        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
+        deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
     }
 
     private void deleteDirectoryRecursive(Path path) throws IOException {

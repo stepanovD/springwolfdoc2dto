@@ -21,7 +21,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.codemodel.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jsonschema2pojo.*;
+import org.jsonschema2pojo.GenerationConfig;
+import org.jsonschema2pojo.Jackson2Annotator;
+import org.jsonschema2pojo.SchemaGenerator;
+import org.jsonschema2pojo.SchemaMapper;
 import org.jsonschema2pojo.rules.RuleFactory;
 
 import java.io.IOException;
@@ -189,7 +192,7 @@ public class PojoGenerator {
         }
 
         Iterator<String> descendingIterator = orderedList.descendingIterator();
-        if(channelComponents != null && !channelComponents.isEmpty()) {
+        if (channelComponents != null && !channelComponents.isEmpty()) {
             while (descendingIterator.hasNext()) {
                 String component = descendingIterator.next();
                 if (channelComponents.contains(component) && refsParentToChild.containsKey(component)) {
@@ -245,6 +248,7 @@ public class PojoGenerator {
         generated.param("use", JsonTypeInfo.Id.NAME);
         generated.param("include", JsonTypeInfo.As.EXISTING_PROPERTY);
         generated.param("visible", true);
+        generated.param("defaultImpl", jclass);
     }
 
     /**
