@@ -50,4 +50,14 @@ public class CustomGenerationConfig extends DefaultGenerationConfig {
     public boolean isSerializable() {
         return true;
     }
+
+    @Override
+    public boolean isFormatDateTimes() {
+        return true;
+    }
+
+    @Override
+    public String getCustomDateTimePattern() {
+        return "yyyy-MM-dd'T'HH:mm:ss";
+    }
 }

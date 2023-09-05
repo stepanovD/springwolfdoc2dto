@@ -714,6 +714,7 @@ class PojoGeneratorTest {
         Assertions.assertEquals(testDeletedObject.getClass().getName(), "pckg.test.DeletedEvent");
 
         System.out.println("deserialized object");
+        System.out.println(objectMapper.writeValueAsString(testChangedObject));
 
         deleteDirectoryRecursive(path.resolve(packageName.split("\\.")[0]));
     }
